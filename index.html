@@ -40,14 +40,41 @@
   /* SIDEBAR */
   .sidebar {
     width: var(--sidebar-w);
-    min-height: 100vh;
+    height: 100vh;
     background: var(--teto-blue);
     position: fixed;
     top: 0; left: 0;
     display: flex;
     flex-direction: column;
     z-index: 100;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
+
+  /* Custom scrollbar suave dentro da sidebar */
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
+
+  /* Botão de fechar dentro do sidebar (só aparece no mobile) */
+  .sidebar-close {
+    display: none;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255,255,255,0.10);
+    color: #fff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .sidebar-close:hover { background: rgba(255,255,255,0.18); }
 
   .sidebar-logo {
     padding: 28px 24px 20px;
@@ -143,13 +170,30 @@
   }
 
   .module {
-    display: none;
     max-width: 780px;
     margin: 0 auto;
     padding: 48px 40px 80px;
   }
 
-  .module.active { display: block; }
+  /* Hide all non-active modules with high specificity to override .cover etc. */
+  .module:not(.active) {
+    display: none !important;
+  }
+
+  .module.active {
+    display: block;
+    animation: modFadeIn 0.25s ease-out;
+  }
+
+  /* Cover precisa de flex quando ativo para o layout em coluna centralizado */
+  .module.active.cover {
+    display: flex;
+  }
+
+  @keyframes modFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
   /* MODULE HEADER */
   .mod-badge {
@@ -649,34 +693,72 @@
 
   /* PRINT */
   @media print {
-    .sidebar, .progress-bar, .mobile-menu-btn { display: none !important; }
+    .sidebar, .progress-bar, .mobile-menu-btn, .mobile-topbar, .mobile-overlay { display: none !important; }
     .main { margin-left: 0; }
-    .module { display: block !important; }
+    .module { display: block !important; animation: none !important; }
     .bottom-nav { display: none; }
   }
 
   /* =========================================
-     NOVO: REGRAS PARA CELULAR (MOBILE)
-     Isso não afeta em nada a versão Desktop!
+     REGRAS PARA CELULAR (MOBILE)
+     Não afeta a versão Desktop
      ========================================= */
-  .mobile-menu-btn {
+  .mobile-topbar {
     display: none;
     position: fixed;
-    top: 15px;
-    left: 15px;
+    top: 0; left: 0; right: 0;
+    height: 54px;
+    background: var(--teto-blue);
+    color: #fff;
     z-index: 201;
-    background: var(--teto-dark);
+    align-items: center;
+    padding: 0 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    background: rgba(255,255,255,0.14);
     color: #fff;
     border: none;
-    padding: 10px 14px;
+    padding: 8px 12px;
     border-radius: 8px;
     font-family: 'Syne', sans-serif;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
   }
-  
+  .mobile-menu-btn:active { background: rgba(255,255,255,0.24); }
+
+  .mobile-current {
+    display: none;
+    margin-left: 12px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+  }
+  .mobile-current .mc-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1;
+  }
+  .mobile-current .mc-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .mobile-overlay {
     display: none;
     position: fixed;
@@ -687,57 +769,65 @@
   }
 
   @media (max-width: 768px) {
-    .mobile-menu-btn { display: flex; align-items: center; gap: 6px; }
+    :root { --sidebar-w: 280px; }
+
+    .mobile-topbar { display: flex; }
+    .mobile-menu-btn { display: inline-flex; }
+    .mobile-current { display: block; }
     .mobile-overlay.active { display: block; }
-    
+    .sidebar-close { display: flex; align-items: center; justify-content: center; }
+
     .sidebar {
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+      width: 82vw;
+      max-width: 320px;
+      transform: translateX(-105%);
+      transition: transform 0.28s ease;
+      box-shadow: 4px 0 18px rgba(0,0,0,0.18);
     }
-    .sidebar.active {
-      transform: translateX(0);
-    }
-    
-    .main {
-      margin-left: 0;
-    }
-    
-    .progress-bar {
-      left: 0;
-      top: 0;
-    }
-    
-    .module {
-      padding: 70px 20px 60px; /* Mais espaço no topo pro botão */
-    }
-    
-    .cover {
-      padding: 80px 24px 40px;
-    }
+    .sidebar.active { transform: translateX(0); }
+
+    .sidebar-logo { padding: 22px 24px 16px; padding-right: 56px; }
+    .sidebar-label { padding: 14px 24px 6px; }
+    .nav-item { padding: 11px 24px; font-size: 14px; }
+    .sidebar-footer { padding: 16px 24px; }
+
+    .main { margin-left: 0; }
+    .progress-bar { left: 0; top: 54px; }
+
+    .module { padding: 70px 20px 60px; }
+    .cover { padding: 80px 24px 40px; }
     .cover h1 { font-size: 38px; }
     .cover p.desc { font-size: 15px; }
     .cover-modules { grid-template-columns: 1fr; }
-    
     .mod-title { font-size: 28px; }
-    
-    .bottom-nav {
-      flex-direction: column;
-      gap: 12px;
-    }
+
+    .bottom-nav { flex-direction: column; gap: 12px; }
     .nav-btn { width: 100%; justify-content: center; }
-    
-    /* Tabelas agora têm scroll lateral no celular em vez de quebrar layout */
+
+    /* Tabelas com scroll lateral no celular */
     table { display: block; overflow-x: auto; white-space: nowrap; }
+  }
+
+  @media (max-width: 380px) {
+    .sidebar { width: 88vw; }
+    .nav-item { padding: 10px 20px; font-size: 13.5px; }
+    .mobile-current .mc-name { font-size: 13px; }
   }
 </style>
 </head>
 <body>
 
-<button class="mobile-menu-btn" id="mobileMenuBtn">☰ Menu</button>
+<header class="mobile-topbar" id="mobileTopbar">
+  <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">☰ Menu</button>
+  <div class="mobile-current" id="mobileCurrent">
+    <div class="mc-label">Você está em</div>
+    <div class="mc-name" id="mobileCurrentName">Capa &amp; Índice</div>
+  </div>
+</header>
 <div class="mobile-overlay" id="mobileOverlay"></div>
 
-<nav class="sidebar">
+<nav class="sidebar" id="sidebar" aria-label="Módulos">
+  <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu" type="button">✕</button>
   <div class="sidebar-logo">
     <div class="org">TETO PE</div>
     <div class="sub">Manual de Comunicação</div>
@@ -1715,45 +1805,82 @@
   const TOTAL = 10;
   let current = 0;
 
-  // Elementos do Menu Mobile
+  // Elementos
   const mobileMenuBtn = document.getElementById('mobileMenuBtn');
   const mobileOverlay = document.getElementById('mobileOverlay');
-  const sidebar = document.querySelector('.sidebar');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarClose = document.getElementById('sidebarClose');
+  const mobileCurrentName = document.getElementById('mobileCurrentName');
+  const progressBar = document.getElementById('progressBar');
 
-  // Abre/Fecha Menu Mobile
-  mobileMenuBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('active');
-    mobileOverlay.classList.toggle('active');
-  });
+  const isMobile = () => window.innerWidth <= 768;
 
-  // Fecha Menu ao clicar fora
-  mobileOverlay.addEventListener('click', () => {
+  function openMenu() {
+    sidebar.classList.add('active');
+    mobileOverlay.classList.add('active');
+    mobileMenuBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMenu() {
     sidebar.classList.remove('active');
     mobileOverlay.classList.remove('active');
+    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  mobileMenuBtn.addEventListener('click', () => {
+    if (sidebar.classList.contains('active')) closeMenu();
+    else openMenu();
+  });
+  mobileOverlay.addEventListener('click', closeMenu);
+  sidebarClose.addEventListener('click', closeMenu);
+
+  // Fecha menu ao apertar Esc
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('active')) closeMenu();
   });
 
+  function scrollTopReliable() {
+    // Scroll instantâneo é mais confiável após troca de display:none/block,
+    // especialmente em navegadores mobile.
+    if (window.scrollTo) window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }
+
   function goTo(n) {
-    document.querySelectorAll('.module').forEach((m, i) => {
-      m.classList.toggle('active', i === n);
-    });
-    document.querySelectorAll('.nav-item').forEach((item, i) => {
-      item.classList.toggle('active', i === n);
-    });
+    if (n < 0 || n >= TOTAL) return;
+
+    // Fecha o menu primeiro no mobile pra evitar conflito com a animação
+    if (isMobile() && sidebar.classList.contains('active')) closeMenu();
+
+    const modules = document.querySelectorAll('.module');
+    const navItems = document.querySelectorAll('.nav-item');
+
+    modules.forEach((m, i) => m.classList.toggle('active', i === n));
+    navItems.forEach((item, i) => item.classList.toggle('active', i === n));
+
     current = n;
     const pct = (n / (TOTAL - 1)) * 100;
-    document.getElementById('progressBar').style.width = pct + '%';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // NOVO: Fecha o menu lateral no celular após clicar em um link
-    if (window.innerWidth <= 768) {
-      sidebar.classList.remove('active');
-      mobileOverlay.classList.remove('active');
+    progressBar.style.width = pct + '%';
+
+    // Atualiza o nome do módulo atual mostrado na barra superior do mobile
+    const activeNav = navItems[n];
+    if (activeNav && mobileCurrentName) {
+      mobileCurrentName.textContent = activeNav.textContent.trim().replace(/^\S+\s+/, '');
     }
+
+    // Garante scroll para o topo de forma confiável após o reflow
+    requestAnimationFrame(scrollTopReliable);
   }
 
   document.querySelectorAll('.nav-item').forEach((item, i) => {
     item.addEventListener('click', () => goTo(i));
   });
+
+  // Inicializa o nome do módulo na barra superior
+  goTo(0);
 </script>
 </body>
 </html>
