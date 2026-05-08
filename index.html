@@ -170,15 +170,24 @@
   }
 
   .module {
-    display: none;
     max-width: 780px;
     margin: 0 auto;
     padding: 48px 40px 80px;
   }
 
+  /* Hide all non-active modules with high specificity to override .cover etc. */
+  .module:not(.active) {
+    display: none !important;
+  }
+
   .module.active {
     display: block;
     animation: modFadeIn 0.25s ease-out;
+  }
+
+  /* Cover precisa de flex quando ativo para o layout em coluna centralizado */
+  .module.active.cover {
+    display: flex;
   }
 
   @keyframes modFadeIn {
